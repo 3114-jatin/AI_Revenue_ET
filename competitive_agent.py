@@ -1,4 +1,4 @@
-from services.llm_service import generate_response
+from llm_service import generate_response
 
 def generate_battlecard(competitor):
 
