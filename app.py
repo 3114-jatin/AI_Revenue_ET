@@ -147,4 +147,3 @@ if menu == "Competitive Intelligence":
                 except Exception as e:
                     st.error("Error generating battlecard")
                     st.write(e)
-```
