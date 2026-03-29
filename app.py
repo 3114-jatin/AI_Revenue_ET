@@ -1,8 +1,13 @@
+```python
 import streamlit as st
-import requests
 import pandas as pd
 
-API_URL = "https://ai-revenue-agent.onrender.com"
+from prospect_agent import generate_outreach
+from deal_agent import detect_deal_risk
+from churn_agent import predict_churn
+from competitive_agent import generate_battlecard
+
+st.set_page_config(page_title="AI Revenue Intelligence", layout="wide")
 
 st.title("🚀 AI Revenue Intelligence Dashboard")
 
@@ -17,7 +22,7 @@ menu = st.sidebar.selectbox(
 )
 
 # -------------------------------
-# Prospect Agent
+# Prospect Outreach
 # -------------------------------
 
 if menu == "Prospect Outreach":
@@ -28,48 +33,55 @@ if menu == "Prospect Outreach":
         name = st.text_input("Prospect Name")
         email = st.text_input("Prospect Email")
         company = st.text_input("Company")
+
         submitted = st.form_submit_button("Generate Outreach Email")
 
         if submitted:
+
             if not name.strip() or not email.strip() or not company.strip():
-                st.error("Please fill in Name, Email, and Company before sending.")
+                st.error("Please fill all fields")
+
             else:
-                data = {
-                    "name": name,
-                    "email": email,
-                    "company": company
-                }
+                try:
+                    result = generate_outreach(name, email, company)
 
-                response = requests.post(f"{API_URL}/outreach", json=data)
+                    st.success("✅ Email Generated Successfully")
+                    st.write(result)
 
-                if response.status_code == 200:
-                    st.success("✅ Email Sent Successfully")
-                    st.json(response.json())
-                else:
-                    st.error("❌ Error sending email")
-                    st.write(response.text)
-
+                except Exception as e:
+                    st.error("❌ Error generating email")
+                    st.write(e)
 
 # -------------------------------
-# Deal Risk
+# Deal Risk Detection
 # -------------------------------
 
 if menu == "Deal Risk Detection":
 
-    st.header("⚠️ AI Deal Risk Agent")
+    st.header("⚠️ AI Deal Risk Detection")
 
-    with st.form("deal_risk_form"):
-        engagement_score = st.number_input("Engagement Score (0-100)", min_value=0, max_value=100)
-        submitted = st.form_submit_button("Analyze Risk")
+    with st.form("deal_form"):
+
+        engagement_score = st.slider(
+            "Engagement Score",
+            0,
+            100,
+            50
+        )
+
+        submitted = st.form_submit_button("Analyze Deal")
 
         if submitted:
-            data = {
-                "engagement_score": engagement_score
-            }
 
-            response = requests.post(f"{API_URL}/deal-risk", json=data)
-            st.write(response.json())
+            try:
+                result = detect_deal_risk(engagement_score)
 
+                st.success("Analysis Complete")
+                st.write(result)
+
+            except Exception as e:
+                st.error("Error analyzing deal")
+                st.write(e)
 
 # -------------------------------
 # Churn Prediction
@@ -77,28 +89,35 @@ if menu == "Deal Risk Detection":
 
 if menu == "Churn Prediction":
 
-    st.header("📉 AI Churn Detection")
+    st.header("📉 AI Customer Churn Prediction")
 
     with st.form("churn_form"):
-        usage = st.number_input("Usage Score", min_value=0.0)
-        sentiment = st.number_input("Sentiment Score", min_value=0.0)
+
+        usage = st.number_input(
+            "Usage Score",
+            min_value=0.0,
+            step=1.0
+        )
+
+        sentiment = st.number_input(
+            "Customer Sentiment Score",
+            min_value=0.0,
+            step=1.0
+        )
+
         submitted = st.form_submit_button("Predict Churn")
 
         if submitted:
-            data = {
-                "usage": usage,
-                "sentiment": sentiment
-            }
 
-            response = requests.post(f"{API_URL}/churn", json=data)
+            try:
+                result = predict_churn(usage, sentiment)
 
-            if response.status_code == 200:
-                st.success("Prediction Ready")
-                st.json(response.json())
-            else:
-                st.error("Error")
-                st.write(response.text)
+                st.success("Prediction Generated")
+                st.write(result)
 
+            except Exception as e:
+                st.error("Prediction Error")
+                st.write(e)
 
 # -------------------------------
 # Competitive Intelligence
@@ -109,17 +128,24 @@ if menu == "Competitive Intelligence":
     st.header("🏆 AI Competitive Battlecards")
 
     with st.form("battlecard_form"):
+
         competitor = st.text_input("Competitor Name")
+
         submitted = st.form_submit_button("Generate Battlecard")
 
         if submitted:
-            data = {"competitor": competitor}
 
-            response = requests.post(f"{API_URL}/battlecard", json=data)
+            if not competitor.strip():
+                st.error("Please enter competitor name")
 
-            if response.status_code == 200:
-                st.success("Battlecard Generated")
-                st.json(response.json())
             else:
-                st.error("Error")
-                st.write(response.text)
+                try:
+                    result = generate_battlecard(competitor)
+
+                    st.success("Battlecard Generated")
+                    st.write(result)
+
+                except Exception as e:
+                    st.error("Error generating battlecard")
+                    st.write(e)
+```
